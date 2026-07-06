@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalesInsight Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body class="bg-light">
+<div class="container mt-4">
+    <h1 class="mb-4">SalesInsight - Welcome, {{ username }}!</h1>
+
+    <a href="/logout" class="btn btn-outline-danger mb-3">Logout</a>
+    <a href="/download_report" class="btn btn-outline-secondary mb-3">Download Manager Report</a>
+    <a href="/download_analyst_report" class="btn btn-outline-secondary mb-3">Download Analyst Report</a>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Upload New Sales Report</h5>
+            <form method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv" class="form-control mb-3" required>
+                <button type="submit" class="btn btn-primary">Analyze Report</button>
+            </form>
+        </div>
+    </div>
+
+    {% if history %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Recent Uploads</h5>
+            <ul class="mb-0">
+                {% for item in history %}
+                <li>{{ item[1] }} - {{ item[2] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if summary %}
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="manager-tab" data-bs-toggle="tab" data-bs-target="#manager">Manager View</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="analyst-tab" data-bs-toggle="tab" data-bs-target="#analyst">Analyst View</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="manager">
+            <h3>Business Insights</h3>
+
+            <h5 class="mt-4">1. Key Performance Metrics</h5>
+            <div class="row">
+                {% for label, value in manager.metrics %}
+                <div class="col-md-4 mb-3">
+                    <div class="alert alert-info">
+                        <strong>{{ label }}</strong><br>{{ value }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h5 class="mt-4">2. Top Performers</h5>
+            <div class="row">
+                {% for label, value in manager.top_performers %}
+                <div class="col-md-4 mb-3">
+                    <div class="alert alert-success">
+                        <strong>{{ label }}</strong><br>{{ value }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h5 class="mt-4">3. Growth Trends</h5>
+            {% for label, value in manager.growth %}
+                <div class="mb-3">
+                    <strong>{{ label }}</strong>
+                    {% if '<table' in value %}
+                        {{ value | safe }}
+                    {% else %}
+                        <div>{{ value }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <iframe src="{{ plots.trend }}" width="100%" height="400"></iframe>
+
+            <h5 class="mt-4">4. Customer Insights</h5>
+            <div class="row">
+                {% for label, value in manager.customers %}
+                <div class="col-md-4 mb-3">
+                    <div class="alert alert-secondary">
+                        <strong>{{ label }}</strong><br>{{ value }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <iframe src="{{ plots.age }}" width="100%" height="400"></iframe>
+
+            <h5 class="mt-4">5. Product & Category Health</h5>
+            <div class="row">
+                {% for label, value in manager.health %}
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-warning">
+                        <strong>{{ label }}</strong><br>{{ value }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <iframe src="{{ plots.category }}" width="100%" height="400"></iframe>
+            <iframe src="{{ plots.location }}" width="100%" height="400"></iframe>
+
+            <h5 class="mt-4">6. Actionable Recommendations</h5>
+            <ul class="list-group mb-4">
+                {% for item in manager.recommendations %}
+                <li class="list-group-item">{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="tab-pane fade" id="analyst">
+            <h3>Detailed EDA</h3>
+
+            <h5 class="mt-4">1. Statistical Summary</h5>
+            {{ analyst.describe | safe }}
+
+            <h5 class="mt-4">2. Correlation Analysis</h5>
+            <iframe src="{{ plots.correlation }}" width="100%" height="420"></iframe>
+            {{ analyst.correlation | safe }}
+
+            <h5 class="mt-4">3. Outlier Detection</h5>
+            <h6>Top 5 Highest Revenue Transactions</h6>
+            {{ analyst.top_revenue | safe }}
+            <h6>Top 5 Lowest Revenue Transactions</h6>
+            {{ analyst.low_revenue | safe }}
+
+            <h5 class="mt-4">4. Deep Product Analysis</h5>
+            {{ analyst.product_analysis | safe }}
+            <iframe src="{{ plots.product }}" width="100%" height="400"></iframe>
+
+            <h5 class="mt-4">5. Location-wise Performance</h5>
+            {{ analyst.location_performance | safe }}
+            <iframe src="{{ plots.location }}" width="100%" height="400"></iframe>
+
+            <h5 class="mt-4">6. Time-based Analysis</h5>
+            <h6>Sales by Day of Week</h6>
+            {{ analyst.day_sales | safe }}
+            <iframe src="{{ plots.day_sales }}" width="100%" height="400"></iframe>
+            <h6>Weekday vs Weekend Performance</h6>
+            {{ analyst.weekday_weekend | safe }}
+            <iframe src="{{ plots.weekday_weekend }}" width="100%" height="400"></iframe>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+flask
+flask_mysqldb
+pandas
+numpy
+plotly
+seaborn
+matplotlib
+werkzeug
+python-dotenv
