@@ -31,6 +31,10 @@ Sales-Sight is a modern sales analytics dashboard that provides real-time insigh
 - **HTML5** - Structure and markup
 - **CSS3** - Styling and responsive design
 - **JavaScript** - Interactivity and dynamic functionality
+- **Flask**- A lightweight web development pacakage
+- **Numpy**- A Python library to calculate Numerical methods
+- **Pandas**- Used for Data visualisation in Tables(dataframe)
+- **Plotly**- For Plots 
 
 ## 📦 Installation
 
